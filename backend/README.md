@@ -43,6 +43,13 @@ Health check:
 GET /health
 ```
 
+Auth endpoints:
+
+```text
+POST /auth/signup
+POST /auth/login
+```
+
 ## Suggested next modules
 
 - Auth and user management
