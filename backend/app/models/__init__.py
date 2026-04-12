@@ -1,1 +1,1 @@
-"""Persistence models placeholder."""
+"""Persistence models package."""

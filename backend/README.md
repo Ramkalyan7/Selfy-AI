@@ -2,6 +2,8 @@
 
 Minimal FastAPI backend scaffold for a Pika-style AI application.
 
+The backend is wired to SQLAlchemy and expects a SQL database via `DATABASE_URL`.
+
 ## Structure
 
 ```text
@@ -25,6 +27,14 @@ backend/
 ```bash
 uv sync
 uv run python main.py
+```
+
+Set `DATABASE_URL` in `.env` to switch databases.
+
+Examples:
+
+```text
+DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:5432/selfy_ai
 ```
 
 Health check:
