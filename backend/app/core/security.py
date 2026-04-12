@@ -2,15 +2,18 @@ from __future__ import annotations
 
 import hashlib
 import hmac
+import logging
 import secrets
 from datetime import UTC, datetime, timedelta
 
 import jwt
+from jwt import InvalidTokenError
 
 from app.core.config import get_settings
 
 
 settings = get_settings()
+logger = logging.getLogger(__name__)
 
 
 def hash_password(password: str) -> str:
@@ -52,3 +55,21 @@ def create_access_token(subject: str) -> str:
         settings.jwt_secret_key,
         algorithm=settings.jwt_algorithm,
     )
+
+
+def decode_access_token(token: str) -> dict | None:
+    try:
+        payload = jwt.decode(
+            token,
+            settings.jwt_secret_key,
+            algorithms=[settings.jwt_algorithm],
+        )
+    except InvalidTokenError:
+        logger.warning("Invalid JWT token received.")
+        return None
+
+    if payload.get("type") != "access":
+        logger.warning("JWT token with invalid type received.")
+        return None
+
+    return payload
