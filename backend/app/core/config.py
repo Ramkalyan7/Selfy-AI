@@ -12,6 +12,10 @@ class Settings(BaseSettings):
     supabase_url: str = Field(default="", alias="SUPABASE_URL")
     supabase_key: str = Field(default="", alias="SUPABASE_KEY")
     supabase_users_table: str = Field(default="users", alias="SUPABASE_USERS_TABLE")
+    supabase_onboarding_table: str = Field(
+        default="user_onboarding_profiles",
+        alias="SUPABASE_ONBOARDING_TABLE",
+    )
     supabase_assets_bucket: str = Field(
         default="assets",
         alias="SUPABASE_ASSETS_BUCKET",

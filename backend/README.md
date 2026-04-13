@@ -40,6 +40,7 @@ Set the Supabase settings in `backend/.env`.
 SUPABASE_URL=https://your-project-ref.supabase.co
 SUPABASE_KEY=your-supabase-service-role-or-server-key
 SUPABASE_USERS_TABLE=users
+SUPABASE_ONBOARDING_TABLE=user_onboarding_profiles
 SUPABASE_ASSETS_BUCKET=assets
 JWT_SECRET_KEY=change-me
 JWT_ALGORITHM=HS256
@@ -87,6 +88,8 @@ Auth endpoints:
 ```text
 POST /auth/signup
 POST /auth/login
+GET /onboarding
+PUT /onboarding
 ```
 
 ## Notes
