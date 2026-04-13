@@ -6,7 +6,6 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.types import ASGIApp
 
 from app.core.security import decode_access_token
-from app.db.session import SessionLocal
 from app.repositories.user import get_user_by_id
 
 
@@ -54,16 +53,15 @@ class AuthMiddleware(BaseHTTPMiddleware):
             )
 
         subject = payload.get("sub")
-        if subject is None or not str(subject).isdigit():
+        if subject is None:
             logger.warning("JWT token subject is missing or invalid.")
             return JSONResponse(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 content={"detail": "Authentication is required."},
             )
 
-        db = SessionLocal()
         try:
-            user = get_user_by_id(db, int(subject))
+            user = get_user_by_id(str(subject))
             if user is None:
                 logger.warning("JWT token references a missing user.")
                 return JSONResponse(
@@ -79,5 +77,3 @@ class AuthMiddleware(BaseHTTPMiddleware):
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 content={"detail": "Unable to process the request right now."},
             )
-        finally:
-            db.close()

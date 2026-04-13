@@ -1,25 +1,16 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session, sessionmaker
+from functools import lru_cache
 
+from supabase import Client, create_client
 from app.core.config import get_settings
 
 
 settings = get_settings()
 
 
-engine = create_engine(settings.database_url)
-
-SessionLocal = sessionmaker(
-    autocommit=False,
-    autoflush=False,
-    bind=engine,
-    class_=Session,
-)
-
-
-def get_db() -> Session:
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+@lru_cache
+def get_supabase() -> Client:
+    if not settings.supabase_url or not settings.supabase_key:
+        raise RuntimeError(
+            "SUPABASE_URL and SUPABASE_KEY must be configured before starting the backend."
+        )
+    return create_client(settings.supabase_url, settings.supabase_key)

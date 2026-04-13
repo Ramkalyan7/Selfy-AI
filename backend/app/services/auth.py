@@ -1,8 +1,6 @@
 import logging
 
 from fastapi import HTTPException, status
-from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.orm import Session
 
 from app.core.security import create_access_token, hash_password, verify_password
 from app.repositories.user import create_user, get_user_by_email
@@ -12,9 +10,9 @@ from app.schemas.auth import AuthResponse, LoginRequest, SignupRequest, UserResp
 logger = logging.getLogger(__name__)
 
 
-def signup(db: Session, payload: SignupRequest) -> AuthResponse:
+def signup(payload: SignupRequest) -> AuthResponse:
     try:
-        existing_user = get_user_by_email(db, str(payload.email))
+        existing_user = get_user_by_email(str(payload.email))
         if existing_user is not None:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
@@ -22,7 +20,6 @@ def signup(db: Session, payload: SignupRequest) -> AuthResponse:
             )
 
         user = create_user(
-            db,
             email=str(payload.email),
             full_name=payload.full_name,
             password_hash=hash_password(payload.password),
@@ -35,23 +32,17 @@ def signup(db: Session, payload: SignupRequest) -> AuthResponse:
         )
     except HTTPException:
         raise
-    except SQLAlchemyError as exc:
-        logger.exception("Database error while creating user during signup.")
+    except Exception as exc:
+        logger.exception("Unexpected error during signup.")
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Unable to process signup right now.",
         ) from exc
-    except Exception as exc:
-        logger.exception("Unexpected error during signup.")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Unable to process signup right now.",
-        ) from exc
 
 
-def login(db: Session, payload: LoginRequest) -> AuthResponse:
+def login(payload: LoginRequest) -> AuthResponse:
     try:
-        user = get_user_by_email(db, str(payload.email))
+        user = get_user_by_email(str(payload.email))
         if user is None or not verify_password(payload.password, user.password_hash):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -66,15 +57,9 @@ def login(db: Session, payload: LoginRequest) -> AuthResponse:
         )
     except HTTPException:
         raise
-    except SQLAlchemyError as exc:
-        logger.exception("Database error while logging in user.")
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Unable to process login right now.",
-        ) from exc
     except Exception as exc:
         logger.exception("Unexpected error during login.")
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Unable to process login right now.",
         ) from exc
