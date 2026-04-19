@@ -6,6 +6,7 @@ The backend now uses Supabase as the single backend platform for:
 
 - SQL data through Supabase table APIs
 - Object storage through Supabase Storage buckets
+- Gemini through the official Google GenAI Python SDK
 
 ## Structure
 
@@ -42,6 +43,8 @@ SUPABASE_KEY=your-supabase-service-role-or-server-key
 SUPABASE_USERS_TABLE=users
 SUPABASE_ONBOARDING_TABLE=user_onboarding_profiles
 SUPABASE_ASSETS_BUCKET=assets
+GEMINI_API_KEY=your-gemini-api-key
+GEMINI_MODEL=gemini-2.5-flash
 JWT_SECRET_KEY=change-me
 JWT_ALGORITHM=HS256
 JWT_ACCESS_TOKEN_EXPIRE_MINUTES=60
@@ -90,7 +93,15 @@ POST /auth/signup
 POST /auth/login
 GET /onboarding
 PUT /onboarding
+POST /llm/generate
 ```
+
+Gemini setup:
+
+- Uses the official `google-genai` SDK.
+- Reads credentials from `GEMINI_API_KEY`.
+- Defaults to `GEMINI_MODEL=gemini-2.5-flash`.
+- `POST /llm/generate` accepts a prompt plus optional `system_instruction` and `model`.
 
 ## Notes
 
