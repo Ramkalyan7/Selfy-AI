@@ -21,12 +21,13 @@ def generate_text(
 ) -> LlmGenerateResponse:
     try:
         _ = user
-        model, text = generate_text_completion(
+        provider, model, text = generate_text_completion(
             prompt=payload.prompt,
             system_instruction=payload.system_instruction,
+            provider=payload.provider,
             model=payload.model,
         )
-        return LlmGenerateResponse(model=model, text=text)
+        return LlmGenerateResponse(provider=provider, model=model, text=text)
     except HTTPException:
         raise
     except Exception as exc:

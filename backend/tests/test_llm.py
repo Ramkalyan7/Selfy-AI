@@ -74,7 +74,7 @@ def test_generate_text_endpoint(monkeypatch) -> None:
     monkeypatch.setattr(
         llm_router,
         "generate_text_completion",
-        lambda **_kwargs: ("gemini-2.5-flash", "Hello from Gemini"),
+        lambda **_kwargs: ("gemini", "gemini-2.5-flash", "Hello from Gemini"),
     )
 
     response = client.post(
@@ -88,6 +88,7 @@ def test_generate_text_endpoint(monkeypatch) -> None:
 
     assert response.status_code == 200
     assert response.json() == {
+        "provider": "gemini",
         "model": "gemini-2.5-flash",
         "text": "Hello from Gemini",
     }

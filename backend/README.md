@@ -6,7 +6,7 @@ The backend now uses Supabase as the single backend platform for:
 
 - SQL data through Supabase table APIs
 - Object storage through Supabase Storage buckets
-- Gemini through the official Google GenAI Python SDK
+- LLM access through LangChain, with Gemini configured as the first provider
 
 ## Structure
 
@@ -43,6 +43,7 @@ SUPABASE_KEY=your-supabase-service-role-or-server-key
 SUPABASE_USERS_TABLE=users
 SUPABASE_ONBOARDING_TABLE=user_onboarding_profiles
 SUPABASE_ASSETS_BUCKET=assets
+LLM_PROVIDER=gemini
 GEMINI_API_KEY=your-gemini-api-key
 GEMINI_MODEL=gemini-2.5-flash
 JWT_SECRET_KEY=change-me
@@ -96,12 +97,13 @@ PUT /onboarding
 POST /llm/generate
 ```
 
-Gemini setup:
+LLM setup:
 
-- Uses the official `google-genai` SDK.
-- Reads credentials from `GEMINI_API_KEY`.
+- Uses LangChain as the application-facing LLM integration layer.
+- Reads the default provider from `LLM_PROVIDER`.
+- Gemini credentials come from `GEMINI_API_KEY`.
 - Defaults to `GEMINI_MODEL=gemini-2.5-flash`.
-- `POST /llm/generate` accepts a prompt plus optional `system_instruction` and `model`.
+- `POST /llm/generate` accepts a prompt plus optional `system_instruction`, `provider`, and `model`.
 
 ## Notes
 

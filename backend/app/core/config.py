@@ -20,6 +20,7 @@ class Settings(BaseSettings):
         default="assets",
         alias="SUPABASE_ASSETS_BUCKET",
     )
+    llm_provider: str = Field(default="gemini", alias="LLM_PROVIDER")
     gemini_api_key: str = Field(default="", alias="GEMINI_API_KEY")
     gemini_model: str = Field(default="gemini-2.5-flash", alias="GEMINI_MODEL")
     jwt_secret_key: str = Field(default="change-me", alias="JWT_SECRET_KEY")
