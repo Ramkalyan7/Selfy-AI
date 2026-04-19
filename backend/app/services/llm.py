@@ -3,6 +3,8 @@ from functools import lru_cache
 from typing import Protocol
 
 from fastapi import HTTPException, status
+from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_google_genai import ChatGoogleGenerativeAI
 
 from app.core.config import get_settings
 
@@ -48,15 +50,6 @@ class GeminiLangChainProvider:
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 detail="Gemini is not configured.",
             )
-
-        try:
-            from langchain_core.messages import HumanMessage, SystemMessage
-            from langchain_google_genai import ChatGoogleGenerativeAI
-        except ImportError as exc:
-            raise HTTPException(
-                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail="LangChain Gemini integration is not installed.",
-            ) from exc
 
         chosen_model = request.model or self.default_model
         messages = []
