@@ -103,7 +103,8 @@ LLM setup:
 - Reads the default provider from `LLM_PROVIDER`.
 - Gemini credentials come from `GEMINI_API_KEY`.
 - Defaults to `GEMINI_MODEL=gemini-2.5-flash`.
-- `POST /llm/generate` accepts a prompt plus optional `system_instruction`, `provider`, and `model`.
+- `POST /llm/generate` accepts the user prompt plus optional `provider` and `model`.
+- The system prompt is built on the server from the saved onboarding profile.
 
 ## Notes
 

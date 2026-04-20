@@ -60,6 +60,13 @@ def _auth_headers(user_id: str) -> dict[str, str]:
     return {"Authorization": f"Bearer {create_access_token(user_id)}"}
 
 
+def _raise_onboarding_incomplete(_user_id: str) -> str:
+    raise llm_router.HTTPException(
+        status_code=409,
+        detail="Complete onboarding before using the AI self.",
+    )
+
+
 def test_generate_text_endpoint(monkeypatch) -> None:
     fake_supabase = _FakeSupabaseClient()
     fake_supabase.seed_user(
@@ -73,6 +80,11 @@ def test_generate_text_endpoint(monkeypatch) -> None:
     monkeypatch.setattr(user_repository, "get_supabase", lambda: fake_supabase)
     monkeypatch.setattr(
         llm_router,
+        "build_system_prompt_for_user",
+        lambda _user_id: "Server built system prompt",
+    )
+    monkeypatch.setattr(
+        llm_router,
         "generate_text_completion",
         lambda **_kwargs: ("gemini", "gemini-2.5-flash", "Hello from Gemini"),
     )
@@ -81,7 +93,6 @@ def test_generate_text_endpoint(monkeypatch) -> None:
         "/llm/generate",
         json={
             "prompt": "Say hello",
-            "system_instruction": "Be concise.",
         },
         headers=_auth_headers("user-llm-1"),
     )
@@ -92,6 +103,35 @@ def test_generate_text_endpoint(monkeypatch) -> None:
         "model": "gemini-2.5-flash",
         "text": "Hello from Gemini",
     }
+
+
+def test_generate_text_requires_completed_onboarding(monkeypatch) -> None:
+    fake_supabase = _FakeSupabaseClient()
+    fake_supabase.seed_user(
+        {
+            "id": "user-llm-2",
+            "email": "ram2@example.com",
+            "full_name": "Ram Verma",
+            "password_hash": "hashed-password",
+        }
+    )
+    monkeypatch.setattr(user_repository, "get_supabase", lambda: fake_supabase)
+    monkeypatch.setattr(
+        llm_router,
+        "build_system_prompt_for_user",
+        _raise_onboarding_incomplete,
+    )
+
+    response = client.post(
+        "/llm/generate",
+        json={
+            "prompt": "Say hello",
+        },
+        headers=_auth_headers("user-llm-2"),
+    )
+
+    assert response.status_code == 409
+    assert response.json() == {"detail": "Complete onboarding before using the AI self."}
 
 
 def test_generate_text_requires_auth() -> None:

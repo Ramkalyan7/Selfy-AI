@@ -150,7 +150,9 @@ def test_put_onboarding_saves_and_returns_profile(monkeypatch) -> None:
     assert body["display_name"] == "Ram"
     assert body["communication_style"] == "casual"
     assert body["top_values"] == ["Honesty", "Freedom", "Growth"]
-    assert "You are Ram's AI Self." in body["system_prompt_preview"]
+    assert "You are the AI version of the user." in body["system_prompt_preview"]
+    assert "Personality traits: Funny, calm, slightly sarcastic." in body["system_prompt_preview"]
+    assert "Tone: casual" in body["system_prompt_preview"]
 
     get_response = client.get("/onboarding", headers=_auth_headers("user-2"))
 

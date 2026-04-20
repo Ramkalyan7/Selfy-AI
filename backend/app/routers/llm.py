@@ -6,6 +6,7 @@ from app.dependencies.auth import get_current_user
 from app.models.user import User
 from app.schemas.llm import LlmGenerateRequest, LlmGenerateResponse
 from app.services.llm import generate_text_completion
+from app.services.onboarding import build_system_prompt_for_user
 
 
 logger = logging.getLogger(__name__)
@@ -21,9 +22,10 @@ def generate_text(
 ) -> LlmGenerateResponse:
     try:
         _ = user
+        system_instruction = build_system_prompt_for_user(user.id)
         provider, model, text = generate_text_completion(
             prompt=payload.prompt,
-            system_instruction=payload.system_instruction,
+            system_instruction=system_instruction,
             provider=payload.provider,
             model=payload.model,
         )
