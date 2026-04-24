@@ -13,8 +13,10 @@ The backend now uses Supabase as the single backend platform for:
 ```text
 backend/
 |-- app/
+|   |-- agent/          # Agent tools and orchestration primitives
 |   |-- core/           # Settings and shared app primitives
 |   |-- db/             # Supabase client setup
+|   |-- integrations/   # Third-party API clients (GitHub, X, etc.)
 |   |-- models/         # Domain models
 |   |-- repositories/   # Supabase-backed data access
 |   |-- routers/        # Feature-based HTTP routers
@@ -46,6 +48,8 @@ SUPABASE_ASSETS_BUCKET=assets
 LLM_PROVIDER=gemini
 GEMINI_API_KEY=your-gemini-api-key
 GEMINI_MODEL=gemini-2.5-flash
+GITHUB_API_TOKEN=your-github-api-token
+GITHUB_API_URL=https://api.github.com
 JWT_SECRET_KEY=change-me
 JWT_ALGORITHM=HS256
 JWT_ACCESS_TOKEN_EXPIRE_MINUTES=60
@@ -105,6 +109,17 @@ LLM setup:
 - Defaults to `GEMINI_MODEL=gemini-2.5-flash`.
 - `POST /llm/generate` accepts the user prompt plus optional `provider` and `model`.
 - The system prompt is built on the server from the saved onboarding profile.
+
+Agent tools:
+
+- Third-party API clients live under `app/integrations/`.
+- LangChain-compatible tool wrappers live under `app/agent/tools/`.
+- The central tool registry is `app/agent/tools/registry.py`.
+- GitHub is the first integration and currently provides:
+  - authenticated user lookup
+  - repository listing
+  - repository detail lookup
+  - issue creation
 
 ## Notes
 

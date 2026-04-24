@@ -23,6 +23,8 @@ class Settings(BaseSettings):
     llm_provider: str = Field(default="gemini", alias="LLM_PROVIDER")
     gemini_api_key: str = Field(default="", alias="GEMINI_API_KEY")
     gemini_model: str = Field(default="gemini-2.5-flash", alias="GEMINI_MODEL")
+    github_api_token: str = Field(default="", alias="GITHUB_API_TOKEN")
+    github_api_url: str = Field(default="https://api.github.com", alias="GITHUB_API_URL")
     jwt_secret_key: str = Field(default="change-me", alias="JWT_SECRET_KEY")
     jwt_algorithm: str = Field(default="HS256", alias="JWT_ALGORITHM")
     jwt_access_token_expire_minutes: int = Field(
