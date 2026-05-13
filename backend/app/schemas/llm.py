@@ -8,6 +8,4 @@ class LlmGenerateRequest(BaseModel):
 
 
 class LlmGenerateResponse(BaseModel):
-    provider: str
-    model: str
     text: str

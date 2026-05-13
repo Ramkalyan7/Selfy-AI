@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from app.dependencies.auth import get_current_user
 from app.models.user import User
 from app.schemas.llm import LlmGenerateRequest, LlmGenerateResponse
-from app.services.llm import generate_text_completion
+from backend.app.services.agent import generate_text_completion
 from app.services.onboarding import build_system_prompt_for_user
 
 
