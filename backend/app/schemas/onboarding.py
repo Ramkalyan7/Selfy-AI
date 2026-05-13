@@ -15,14 +15,13 @@ class OnboardingProfileUpsertRequest(BaseModel):
     occupation: ShortText = Field(max_length=255)
     personality_description: LongText = Field(max_length=2000)
     communication_style: CommunicationStyle
-    conflict_response_style: LongText = Field(max_length=2000)
     top_values: list[ShortText] = Field(min_length=3, max_length=3)
     dislikes: LongText = Field(max_length=2000)
-    reply_to_invite: LongText = Field(max_length=2000)
-    reply_to_low_mood: LongText = Field(max_length=2000)
-    reply_to_help_request: LongText = Field(max_length=2000)
     long_form_topics: LongText = Field(max_length=2000)
     current_goals: LongText = Field(max_length=2000)
+    primary_language: ShortText = Field(max_length=255)
+    secondary_language: ShortText = Field(max_length=255)
+    industry: ShortText = Field(max_length=255)
 
     @field_validator("top_values")
     @classmethod
@@ -41,14 +40,13 @@ class OnboardingProfileResponse(BaseModel):
     occupation: str
     personality_description: str
     communication_style: CommunicationStyle
-    conflict_response_style: str
     top_values: list[str]
     dislikes: str
-    reply_to_invite: str
-    reply_to_low_mood: str
-    reply_to_help_request: str
     long_form_topics: str
     current_goals: str
+    primary_language: str
+    secondary_language: str
+    industry: str
     system_prompt_preview: str
     completed_at: datetime
     created_at: datetime

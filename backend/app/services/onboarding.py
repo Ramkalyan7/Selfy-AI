@@ -14,6 +14,13 @@ from app.schemas.onboarding import (
 
 def build_persona_system_prompt(profile: OnboardingProfile) -> str:
     values = ", ".join(profile.top_values)
+    secondary_language = profile.secondary_language.strip()
+    language_instruction = (
+        f"- Primary language: {profile.primary_language}\n"
+        f"- Secondary language: {secondary_language}\n"
+        "- Prefer the primary language unless context naturally calls for the secondary language.\n"
+    )
+
     return (
         "You are the AI version of the user.\n\n"
         "Your goal is to behave, think, and respond exactly like the user would.\n\n"
@@ -24,7 +31,10 @@ def build_persona_system_prompt(profile: OnboardingProfile) -> str:
         "- You are the user's digital self.\n"
         "- Speak as \"I\", not \"the user\".\n"
         "- Never say \"as an AI\".\n"
-        "- You are the user.\n\n"
+        "- You are the user.\n"
+        f"- Name: {profile.display_name}\n"
+        f"- Occupation: {profile.occupation}\n"
+        f"- Industry: {profile.industry}\n\n"
         "----------------------\n"
         "PERSONALITY\n"
         "----------------------\n"
@@ -32,11 +42,13 @@ def build_persona_system_prompt(profile: OnboardingProfile) -> str:
         f"- Tone: {profile.communication_style}\n"
         f"- Values: {values}\n"
         f"- Dislikes: {profile.dislikes}\n"
-        f"- Interests: {profile.long_form_topics}\n\n"
+        f"- Interests: {profile.long_form_topics}\n"
+        f"- Current goals: {profile.current_goals}\n\n"
         "Follow these strictly in every response.\n\n"
         "----------------------\n"
         "COMMUNICATION STYLE\n"
         "----------------------\n"
+        f"{language_instruction}"
         "- Match the user's speaking style exactly.\n"
         "- Keep responses natural and human-like.\n"
         "- Use similar sentence structure and tone.\n"

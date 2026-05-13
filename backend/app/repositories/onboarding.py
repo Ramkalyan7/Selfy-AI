@@ -20,9 +20,9 @@ def get_onboarding_profile_by_user_id(user_id: str) -> OnboardingProfile | None:
         .table(settings.supabase_onboarding_table)
         .select(
             "user_id, display_name, occupation, personality_description, "
-            "communication_style, conflict_response_style, top_values, dislikes, "
-            "reply_to_invite, reply_to_low_mood, reply_to_help_request, "
-            "long_form_topics, current_goals, created_at, updated_at, completed_at"
+            "communication_style, top_values, dislikes, long_form_topics, "
+            "current_goals, primary_language, secondary_language, industry, "
+            "created_at, updated_at, completed_at"
         )
         .eq("user_id", user_id)
         .limit(1)
