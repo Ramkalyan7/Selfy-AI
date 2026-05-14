@@ -1,59 +1,31 @@
-from typing import Any
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlmodel import select
 
-from app.core.config import get_settings
-from app.db.session import get_supabase
 from app.models.user import User
 
 
-settings = get_settings()
+async def get_user_by_id(session: AsyncSession, user_id: str) -> User | None:
+    return await session.get(User, user_id)
 
 
-def _row_to_user(row: dict[str, Any] | None) -> User | None:
-    if row is None:
-        return None
-    return User.model_validate(row)
+async def get_user_by_email(session: AsyncSession, email: str) -> User | None:
+    result = await session.execute(select(User).where(User.email == email))
+    return result.scalar_one_or_none()
 
 
-def get_user_by_id(user_id: str) -> User | None:
-    response = (
-        get_supabase()
-        .table(settings.supabase_users_table)
-        .select("id, email, full_name, password_hash")
-        .eq("id", user_id)
-        .limit(1)
-        .execute()
-    )
-    return _row_to_user(response.data[0] if response.data else None)
-
-
-def get_user_by_email(email: str) -> User | None:
-    response = (
-        get_supabase()
-        .table(settings.supabase_users_table)
-        .select("id, email, full_name, password_hash")
-        .eq("email", email)
-        .limit(1)
-        .execute()
-    )
-    return _row_to_user(response.data[0] if response.data else None)
-
-
-def create_user(
+async def create_user(
     *,
+    session: AsyncSession,
     email: str,
     full_name: str,
     password_hash: str,
 ) -> User:
-    response = (
-        get_supabase()
-        .table(settings.supabase_users_table)
-        .insert(
-            {
-                "email": email,
-                "full_name": full_name,
-                "password_hash": password_hash,
-            }
-        )
-        .execute()
+    user = User(
+        email=email,
+        full_name=full_name,
+        password_hash=password_hash,
     )
-    return User.model_validate(response.data[0])
+    session.add(user)
+    await session.commit()
+    await session.refresh(user)
+    return user

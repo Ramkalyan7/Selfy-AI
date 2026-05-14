@@ -1,26 +1,55 @@
-from datetime import datetime
-from typing import Literal
+from datetime import datetime, timezone
+from typing import Literal, Optional, TYPE_CHECKING
 
-from pydantic import BaseModel, ConfigDict
+from sqlalchemy import JSON, DateTime
+from sqlalchemy import func
+from sqlmodel import Column, Field, Relationship, SQLModel
+
+
+if TYPE_CHECKING:
+    from .user import User
 
 
 CommunicationStyle = Literal["casual", "formal", "mixed"]
 
 
-class OnboardingProfile(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-    user_id: str
+def utc_now() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+class OnboardingProfile(SQLModel, table=True):
+    model_config = {"extra": "ignore"}
+    __tablename__ = "onboarding_profiles"
+
+    user_id: str = Field(primary_key=True, foreign_key="users.id")
     display_name: str
     occupation: str
-    personality_description: str # How would you describe your personality? (e.g., funny, serious, chill, sarcastic)
-    communication_style: CommunicationStyle #How do you usually talk? Casual Formal Mix of both
-    top_values: list[str] # What are your top 3 values? (e.g., honesty, success, freedom, family)
-    dislikes: str  # What do you dislike or avoid? (very important for realism)
-    long_form_topics: str # What topics can you talk about for hours?
-    current_goals: str # Whatare your current goals
-    created_at: datetime
-    updated_at: datetime
-    completed_at: datetime
-    primary_language: str        # especially important for non-English users
-    secondary_language: str | None
-    industry: str                # "tech", "finance", "creative" — changes vocab 
+    personality_description: str
+    communication_style: str = Field(default="mixed")
+    top_values: list[str] = Field(default_factory=list, sa_column=Column(JSON))
+    dislikes: str
+    long_form_topics: str
+    current_goals: str
+    primary_language: str
+    secondary_language: Optional[str] = None
+    industry: str
+    created_at: datetime = Field(
+        default_factory=utc_now,
+        sa_column=Column(DateTime(timezone=True), server_default=func.now()),
+    )
+    updated_at: datetime = Field(
+        default_factory=utc_now,
+        sa_column=Column(
+            DateTime(timezone=True),
+            server_default=func.now(),
+            onupdate=func.now(),
+        ),
+    )
+    completed_at: datetime = Field(
+        default_factory=utc_now,
+        sa_column=Column(DateTime(timezone=True), nullable=False),
+    )
+    user: Optional["User"] = Relationship(
+        back_populates="onboarding_profile"
+    )
+

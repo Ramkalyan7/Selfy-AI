@@ -1,6 +1,8 @@
 import logging
 
 from fastapi import HTTPException, status
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import create_access_token, hash_password, verify_password
 from app.repositories.user import create_user, get_user_by_email
@@ -10,16 +12,17 @@ from app.schemas.auth import AuthResponse, LoginRequest, SignupRequest, UserResp
 logger = logging.getLogger(__name__)
 
 
-def signup(payload: SignupRequest) -> AuthResponse:
+async def signup(session: AsyncSession, payload: SignupRequest) -> AuthResponse:
     try:
-        existing_user = get_user_by_email(str(payload.email))
+        existing_user = await get_user_by_email(session, str(payload.email))
         if existing_user is not None:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="User with this email already exists.",
             )
 
-        user = create_user(
+        user = await create_user(
+            session=session,
             email=str(payload.email),
             full_name=payload.full_name,
             password_hash=hash_password(payload.password),
@@ -32,7 +35,14 @@ def signup(payload: SignupRequest) -> AuthResponse:
         )
     except HTTPException:
         raise
+    except IntegrityError as exc:
+        await session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="User with this email already exists.",
+        ) from exc
     except Exception as exc:
+        await session.rollback()
         logger.exception("Unexpected error during signup.")
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -40,9 +50,9 @@ def signup(payload: SignupRequest) -> AuthResponse:
         ) from exc
 
 
-def login(payload: LoginRequest) -> AuthResponse:
+async def login(session: AsyncSession, payload: LoginRequest) -> AuthResponse:
     try:
-        user = get_user_by_email(str(payload.email))
+        user = await get_user_by_email(session, str(payload.email))
         if user is None or not verify_password(payload.password, user.password_hash):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,

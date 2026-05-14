@@ -1,7 +1,9 @@
 import logging
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.db.database import get_session
 from app.dependencies.auth import get_current_user
 from app.models.user import User
 from app.schemas.onboarding import (
@@ -19,9 +21,12 @@ router = APIRouter(prefix="/onboarding", tags=["onboarding"])
 
 
 @router.get("", response_model=OnboardingStatusResponse)
-def get_my_onboarding(user: User = Depends(get_current_user)) -> OnboardingStatusResponse:
+async def get_my_onboarding(
+    user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session),
+) -> OnboardingStatusResponse:
     try:
-        return get_onboarding_status(user.id)
+        return await get_onboarding_status(session, user.id)
     except HTTPException:
         raise
     except Exception as exc:
@@ -33,12 +38,17 @@ def get_my_onboarding(user: User = Depends(get_current_user)) -> OnboardingStatu
 
 
 @router.put("", response_model=OnboardingProfileResponse)
-def save_my_onboarding(
+async def save_my_onboarding(
     payload: OnboardingProfileUpsertRequest,
     user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session),
 ) -> OnboardingProfileResponse:
     try:
-        return save_onboarding_profile(user_id=user.id, payload=payload)
+        return await save_onboarding_profile(
+            session=session,
+            user_id=user.id,
+            payload=payload,
+        )
     except HTTPException:
         raise
     except Exception as exc:

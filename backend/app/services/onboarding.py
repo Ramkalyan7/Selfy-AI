@@ -1,4 +1,5 @@
 from fastapi import HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.onboarding import OnboardingProfile
 from app.repositories.onboarding import (
@@ -14,7 +15,7 @@ from app.schemas.onboarding import (
 
 def build_persona_system_prompt(profile: OnboardingProfile) -> str:
     values = ", ".join(profile.top_values)
-    secondary_language = profile.secondary_language.strip()
+    secondary_language = (profile.secondary_language or "").strip()
     language_instruction = (
         f"- Primary language: {profile.primary_language}\n"
         f"- Secondary language: {secondary_language}\n"
@@ -89,8 +90,8 @@ def _to_response(profile: OnboardingProfile) -> OnboardingProfileResponse:
     )
 
 
-def build_system_prompt_for_user(user_id: str) -> str:
-    profile = get_onboarding_profile_by_user_id(user_id)
+async def build_system_prompt_for_user(session: AsyncSession, user_id: str) -> str:
+    profile = await get_onboarding_profile_by_user_id(session, user_id)
     if profile is None:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -99,25 +100,31 @@ def build_system_prompt_for_user(user_id: str) -> str:
     return build_persona_system_prompt(profile)
 
 
-def get_onboarding_status(user_id: str) -> OnboardingStatusResponse:
-    profile = get_onboarding_profile_by_user_id(user_id)
+async def get_onboarding_status(
+    session: AsyncSession,
+    user_id: str,
+) -> OnboardingStatusResponse:
+    profile = await get_onboarding_profile_by_user_id(session, user_id)
     if profile is None:
         return OnboardingStatusResponse(completed=False, profile=None)
     return OnboardingStatusResponse(completed=True, profile=_to_response(profile))
 
 
-def save_onboarding_profile(
+async def save_onboarding_profile(
     *,
+    session: AsyncSession,
     user_id: str,
     payload: OnboardingProfileUpsertRequest,
 ) -> OnboardingProfileResponse:
     try:
-        profile = upsert_onboarding_profile(
+        profile = await upsert_onboarding_profile(
+            session=session,
             user_id=user_id,
             profile=payload.model_dump(),
         )
         return _to_response(profile)
     except Exception as exc:
+        await session.rollback()
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Unable to save onboarding right now.",

@@ -6,6 +6,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.types import ASGIApp
 
 from app.core.security import decode_access_token
+from app.db.database import AsyncSessionLocal
 from app.repositories.user import get_user_by_id
 
 
@@ -61,7 +62,8 @@ class AuthMiddleware(BaseHTTPMiddleware):
             )
 
         try:
-            user = get_user_by_id(str(subject))
+            async with AsyncSessionLocal() as session:
+                user = await get_user_by_id(session, str(subject))
             if user is None:
                 logger.warning("JWT token references a missing user.")
                 return JSONResponse(

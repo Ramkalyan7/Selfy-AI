@@ -1,11 +1,13 @@
 import logging
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.db.database import get_session
 from app.dependencies.auth import get_current_user
 from app.models.user import User
 from app.schemas.llm import LlmGenerateRequest, LlmGenerateResponse
-from backend.app.services.agent import generate_text_completion
+from app.services.agent import generate_text_completion
 from app.services.onboarding import build_system_prompt_for_user
 
 
@@ -16,13 +18,14 @@ router = APIRouter(prefix="/llm", tags=["llm"])
 
 
 @router.post("/generate", response_model=LlmGenerateResponse)
-def generate_text(
+async def generate_text(
     payload: LlmGenerateRequest,
     user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session),
 ) -> LlmGenerateResponse:
     try:
         _ = user
-        system_instruction = build_system_prompt_for_user(user.id)
+        system_instruction = await build_system_prompt_for_user(session, user.id)
         provider, model, text = generate_text_completion(
             prompt=payload.prompt,
             system_instruction=system_instruction,

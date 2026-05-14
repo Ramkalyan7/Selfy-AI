@@ -2,7 +2,6 @@ from fastapi import FastAPI
 import uvicorn
 
 from app.core.config import get_settings
-from app.db.init_db import init_db
 from app.middleware.auth import AuthMiddleware
 from app.routers.router import api_router
 
@@ -18,10 +17,6 @@ def create_app() -> FastAPI:
         redoc_url="/redoc",
     )
     app.add_middleware(AuthMiddleware)
-
-    @app.on_event("startup")
-    def on_startup() -> None:
-        init_db()
 
     app.include_router(api_router)
     return app

@@ -1,7 +1,9 @@
 import logging
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.db.database import get_session
 from app.schemas.auth import AuthResponse, LoginRequest, SignupRequest
 from app.services.auth import login, signup
 
@@ -13,9 +15,12 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 
 @router.post("/signup", response_model=AuthResponse, status_code=status.HTTP_201_CREATED)
-def signup_user(payload: SignupRequest) -> AuthResponse:
+async def signup_user(
+    payload: SignupRequest,
+    session: AsyncSession = Depends(get_session),
+) -> AuthResponse:
     try:
-        return signup(payload)
+        return await signup(session, payload)
     except HTTPException:
         raise
     except Exception as exc:
@@ -27,9 +32,12 @@ def signup_user(payload: SignupRequest) -> AuthResponse:
 
 
 @router.post("/login", response_model=AuthResponse)
-def login_user(payload: LoginRequest) -> AuthResponse:
+async def login_user(
+    payload: LoginRequest,
+    session: AsyncSession = Depends(get_session),
+) -> AuthResponse:
     try:
-        return login(payload)
+        return await login(session, payload)
     except HTTPException:
         raise
     except Exception as exc:

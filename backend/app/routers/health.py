@@ -1,23 +1,15 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.config import get_settings
-from app.db.session import get_supabase
+from app.db.database import get_session
 from app.schemas.health import HealthResponse
 
 
 router = APIRouter(tags=["health"])
-settings = get_settings()
 
 
 @router.get("/health", response_model=HealthResponse, summary="Health check")
-def health_check() -> HealthResponse:
-    response = (
-        get_supabase()
-        .table(settings.supabase_users_table)
-        .select("id")
-        .limit(1)
-        .execute()
-    )
-    _ = response.data
-
+async def health_check(session: AsyncSession = Depends(get_session)) -> HealthResponse:
+    await session.execute(text("select 1"))
     return HealthResponse(status="ok", database="connected")

@@ -9,17 +9,7 @@ class Settings(BaseSettings):
     app_env: str = Field(default="development", alias="APP_ENV")
     app_host: str = Field(default="127.0.0.1", alias="APP_HOST")
     app_port: int = Field(default=8000, alias="APP_PORT")
-    supabase_url: str = Field(default="", alias="SUPABASE_URL")
-    supabase_key: str = Field(default="", alias="SUPABASE_KEY")
-    supabase_users_table: str = Field(default="users", alias="SUPABASE_USERS_TABLE")
-    supabase_onboarding_table: str = Field(
-        default="user_onboarding_profiles",
-        alias="SUPABASE_ONBOARDING_TABLE",
-    )
-    supabase_assets_bucket: str = Field(
-        default="assets",
-        alias="SUPABASE_ASSETS_BUCKET",
-    )
+    database_url: str = Field(default="", alias="DATABASE_URL")
     llm_provider: str = Field(default="gemini", alias="LLM_PROVIDER")
     gemini_api_key: str = Field(default="", alias="GEMINI_API_KEY")
     gemini_model: str = Field(default="gemini-2.5-flash", alias="GEMINI_MODEL")
@@ -28,7 +18,7 @@ class Settings(BaseSettings):
     jwt_secret_key: str = Field(default="change-me", alias="JWT_SECRET_KEY")
     jwt_algorithm: str = Field(default="HS256", alias="JWT_ALGORITHM")
     jwt_access_token_expire_minutes: int = Field(
-        default=60*24,
+        default=60 * 24,
         alias="JWT_ACCESS_TOKEN_EXPIRE_MINUTES",
     )
 
